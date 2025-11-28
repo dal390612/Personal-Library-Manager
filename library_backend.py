@@ -344,6 +344,17 @@ class LibraryRepository:
 class LibraryApp:
     """Tkinter GUI for managing the library inventory."""
 
+    WINDOW_BG = "#000000"
+    FRAME_BG = "#000000"
+    TEXT_COLOR = "#FFFFFF"
+    ENTRY_BG = "#111111"
+    BUTTON_BG = "#222222"
+    BUTTON_ACTIVE_BG = "#333333"
+    TREE_BG = "#111111"
+    TREE_HEADER_BG = "#222222"
+    TREE_SELECTION_BG = "#444444"
+    SCROLLBAR_BG = "#222222"
+
     def __init__(self, json_path: str = "items.json") -> None:
         if tk is None or ttk is None or messagebox is None:
             raise RuntimeError("Tkinter is not available on this system.")
@@ -351,6 +362,8 @@ class LibraryApp:
         self.repo = LibraryRepository(json_path)
         self.root = tk.Tk()
         self.root.title("Library Manager")
+        self.style = ttk.Style(self.root)
+        self._configure_styles()
 
         self.search_var = tk.StringVar()
         self.search_var.trace_add("write", lambda *_: self.refresh_table())
@@ -551,6 +564,7 @@ class LibraryApp:
 
     def _open_item_form(self, item_type: str, item: Optional[Item] = None) -> None:
         window = tk.Toplevel(self.root)
+        window.configure(bg=self.WINDOW_BG)
         is_edit = item is not None
         window.title(f"{'Edit' if is_edit else 'Add'} {item_type}")
         window.transient(self.root)
@@ -674,6 +688,65 @@ class LibraryApp:
         if not item:
             messagebox.showerror("Selection Required", message, parent=self.root)
         return item
+
+    def _configure_styles(self) -> None:
+        self.root.configure(bg=self.WINDOW_BG)
+        self.root.option_add("*Foreground", self.TEXT_COLOR)
+        self.root.option_add("*Background", self.FRAME_BG)
+
+        style = self.style
+        try:
+            style.theme_use("clam")
+        except tk.TclError:
+            pass  # Fallback to default theme if clam is unavailable.
+
+        style.configure("TFrame", background=self.FRAME_BG)
+        style.configure("TLabel", background=self.FRAME_BG, foreground=self.TEXT_COLOR)
+        style.configure(
+            "TEntry",
+            fieldbackground=self.ENTRY_BG,
+            foreground=self.TEXT_COLOR,
+            background=self.FRAME_BG,
+            insertcolor=self.TEXT_COLOR,
+        )
+
+        style.configure(
+            "TButton",
+            background=self.BUTTON_BG,
+            foreground=self.TEXT_COLOR,
+            padding=6,
+        )
+        style.map(
+            "TButton",
+            background=[("active", self.BUTTON_ACTIVE_BG), ("disabled", "#555555")],
+            foreground=[("disabled", "#888888")],
+        )
+
+        style.configure(
+            "Treeview",
+            background=self.TREE_BG,
+            fieldbackground=self.TREE_BG,
+            foreground=self.TEXT_COLOR,
+            rowheight=24,
+        )
+        style.map(
+            "Treeview",
+            background=[("selected", self.TREE_SELECTION_BG)],
+            foreground=[("selected", self.TEXT_COLOR)],
+        )
+        style.configure(
+            "Treeview.Heading",
+            background=self.TREE_HEADER_BG,
+            foreground=self.TEXT_COLOR,
+            relief="flat",
+        )
+        style.map("Treeview.Heading", background=[("active", self.TREE_HEADER_BG)])
+
+        style.configure(
+            "Vertical.TScrollbar",
+            background=self.SCROLLBAR_BG,
+            troughcolor=self.FRAME_BG,
+        )
 
 
 def main() -> None:
