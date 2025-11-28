@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, ClassVar, Dict, List, Optional, Type
 
 try:
@@ -150,11 +150,18 @@ class Item:
         Item._id_counter += 1
         return assigned_id
 
-    def check_out(self, due_date: str) -> None:
+    def check_out(self, days: int) -> None:
         if self.is_checked_out:
             raise ValueError(f"Item '{self.title}' is already checked out.")
+        try:
+            days_int = int(days)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Checkout period must be a positive integer.") from exc
+        if days_int <= 0:
+            raise ValueError("Checkout period must be greater than zero.")
+        due_date = (datetime.today() + timedelta(days=days_int)).strftime(DATE_FORMAT)
         self.is_checked_out = True
-        self.due_date = ensure_due_date_string(due_date)
+        self.due_date = due_date
 
     def return_item(self) -> None:
         if not self.is_checked_out:
@@ -519,14 +526,14 @@ class LibraryApp:
         if item.is_checked_out:
             messagebox.showerror("Error", f"'{item.title}' is already checked out.", parent=self.root)
             return
-        prompt = "Enter due date (YYYY-MM-DD):"
-        due_date = simpledialog.askstring("Check Out", prompt, parent=self.root)
-        if due_date is None:
+        prompt = "Enter number of days:"
+        days = simpledialog.askinteger("Check Out", prompt, parent=self.root, minvalue=1)
+        if days is None:
             return
         try:
-            item.check_out(ensure_due_date_string(due_date))
+            item.check_out(days)
         except ValueError as exc:
-            messagebox.showerror("Invalid Due Date", str(exc), parent=self.root)
+            messagebox.showerror("Invalid Checkout", str(exc), parent=self.root)
             return
         self.repo.save_items()
         self.refresh_table()
