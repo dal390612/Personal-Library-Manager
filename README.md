@@ -100,6 +100,15 @@ Invalid or inconsistent entries trigger a reset prompt for the JSON file.
 
 ---
 
+# How to Run the Application
+
+1. Navigate to the folder where both `library_backend.py` and `items.json` are located.  
+2. Open a terminal (Command Prompt / PowerShell on Windows, Terminal on macOS or Linux).  
+3. Run the following command: python3 ./library_backend.py
+- If you are on Windows and python3 is not recognized, try: python ./library_backend.py
+
+---
+
 # License
 
 This project is provided for educational and personal use.  
